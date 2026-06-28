@@ -1,6 +1,8 @@
 package com.Bank.Model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +20,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 
     @Id
@@ -31,6 +34,7 @@ public class User {
 
     @NotBlank(message = "Password cannot be empty")
     @Column(nullable = false)
+    @JsonIgnore // Prevents the password hash from leaking to Postman!
     private String password;
 
     @NotBlank(message = "Email cannot be empty")
