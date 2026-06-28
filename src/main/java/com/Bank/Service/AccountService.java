@@ -1,27 +1,28 @@
 package com.Bank.Service;
 
-import com.Bank.Model.Account;
-import com.Bank.Model.Transaction;
-import com.Bank.Model.TransactionType;
-import com.Bank.Model.User;
+import com.Bank.Model.*;
 import com.Bank.Repository.AccountRepository;
 import com.Bank.Repository.TransactionRepository;
+import com.Bank.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
 
 
-    public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository) {
+    public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository, UserRepository userRepository) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -97,5 +98,24 @@ public class AccountService {
         transactionRepository.save(tx);
 
 
+    }
+
+    @Transactional
+    public Account registerAccount(Long userId, BigDecimal initialBalance, AccountType accountType) {
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User profile not found with ID: " + userId));
+
+        Account account = new Account();
+        account.setAccountNumber(UUID.randomUUID().toString().replace("-", "").substring(0, 20));
+        account.setBalance(initialBalance);
+        account.setAccountType(accountType);
+        account.setUser(owner);
+
+        return accountRepository.save(account);
+    }
+
+    public Account getAccountByNumber(String accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new RuntimeException("Account number not found"));
     }
 }
